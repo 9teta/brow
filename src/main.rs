@@ -13,10 +13,13 @@ use homedir::windows::home;
 #[tokio::main]
 async fn main() {
     log_init();
+    let os = std::env::consts::OS;
+    let arch = std::env::consts::ARCH;
+    log::info!("Operating system: {}, architecture: {}", os, arch);
     let homedir = homedir::my_home().expect("Home dir error").expect("No home dir");
     let folder = homedir.join("web_drivers");
     let _ = std::fs::create_dir(&folder);
-    load_drivers(&folder).await;
+    // load_drivers(&folder).await;
 }
 
 fn log_init() {

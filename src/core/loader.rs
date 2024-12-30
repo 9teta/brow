@@ -1,10 +1,9 @@
-use std::{fs::File, io::Cursor, path::Path};
+use std::path::Path;
 
 use bytes::Bytes;
 use reqwest::Client;
-use zip::ZipArchive;
 
-use crate::models::chrome_driver::ChromeDriverRoot;
+use crate::{core::zip::extract_file_from_zip_bytes, models::chrome_driver::ChromeDriverRoot};
 
 
 // The latest versions for which all CfT assets are available for download, for each Chrome release channel (Stable/Beta/Dev/Canary) with an extra downloads property for each channel, listing the full download URLs per asset.
@@ -76,24 +75,6 @@ async fn load_bytes_from_url(client: &Client, url: &str) -> Result<Bytes, reqwes
     Ok(bytes)
 }
 
-fn extract_file_from_zip_bytes(bytes: &Bytes, location_extracted_file: &str, extracted_file_name: &str, output_dir: &Path) -> Result<(), std::io::Error>{
-    log::debug!("Extracting file from zip bytes");
-    let output_path = output_dir.join(extracted_file_name);
-    // Create a cursor for the Bytes
-    let cursor = Cursor::new(bytes);
-    let mut archive = ZipArchive::new(cursor)?;
-    log::trace!("Created zip archive from bytes");
-    // Locate the file in the archive
-    let mut file = archive.by_name(location_extracted_file)?;
-    log::trace!("Found extracting file in zip archive");
-    
-    // Write the file to the output location. Rewrite it if it exists
-    let mut output_file = File::options().read(false).write(true).create(true).truncate(false).open(&output_path)?;
-    log::trace!("Target file opened to write");
-    std::io::copy(&mut file, &mut output_file)?;
-    log::debug!("Target file is written");
-    Ok(())
-}
 
 
 pub async fn load_newest_gecko_driver(client: &Client, output_dir: &Path) {
